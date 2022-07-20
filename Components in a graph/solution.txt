@@ -1,0 +1,84 @@
+#!/bin/python3
+
+import math
+import os
+import random
+import re
+import sys
+from collections import deque
+#
+# Complete the 'componentsInGraph' function below.
+#
+# The function is expected to return an INTEGER_ARRAY.
+# The function accepts 2D_INTEGER_ARRAY gb as parameter.
+#
+
+class Graph:
+    def __init__(self, vertices, edges):
+        self.vertices = vertices
+        self.adj = {v:[] for v in vertices}
+        self.compute_adj_matrix(edges)
+        
+    def compute_adj_matrix(self, edges):
+        for from_vertex, to_vertex in edges:
+            self.adj[from_vertex].append(to_vertex)
+            self.adj[to_vertex].append(from_vertex)
+            
+    def connected_components(self):
+        components = []
+        visited = set()
+        
+        for v in self.vertices:
+            if v not in visited:
+                component = self.component_of(v)
+                components.append(component)
+                visited.union(component)
+                visited = visited | component
+        
+        return components
+    
+    def component_of(self, v):
+        component = set()
+        
+        stack = deque()
+        stack.append(v)
+        
+        while len(stack):
+            v = stack.pop()
+            
+            if v not in component:
+                component.add(v)    
+                
+                neighbours = self.adj[v]
+                stack.extend(neighbours)
+        
+        return component
+
+def componentsInGraph(gb):
+    # Write your code here
+    vertices = max(max(gb, key=lambda x: max(x)))
+    graph = Graph(range(1, vertices+1), gb)
+    
+    components = graph.connected_components()
+    components_size = list(map(len, filter(lambda x: len(x) > 1, components)))
+    
+    return [min(components_size), max(components_size)]
+    
+    
+    
+if __name__ == '__main__':
+    fptr = open(os.environ['OUTPUT_PATH'], 'w')
+
+    n = int(input().strip())
+    
+    gb = []
+    
+    for _ in range(n):
+        gb.append(list(map(int, input().rstrip().split())))
+
+    result = componentsInGraph(gb)
+
+    fptr.write(' '.join(map(str, result)))
+    fptr.write('\n')
+
+    fptr.close()
